@@ -604,6 +604,11 @@ void CrplstoolDlg::GetComboStrRecSrc(const int32_t index, CString& str)
 		L"DV入力",
 		L"地上アナログ",
 		L"ライン入力",
+		L"CATV",
+		L"高度BSデジタル",
+		L"高度CSデジタル",
+
+
 	};
 
 	if( (index >= 0) && (index < (sizeof(str_recsrc) / sizeof(WCHAR*))) ) {
@@ -633,6 +638,10 @@ int32_t CrplstoolDlg::GetRecSrcIndex(const int32_t num, const bool bDir)
 		0x4456,						// DV	DV入力
 		0x5441,						// TA	地上アナログ
 		0x4E4C,						// NL	ライン入力
+		0x4344,						// CD	高度広帯域BSデジタル
+		0x4142,						// AB	高度広帯域BSデジタル
+		0x4143,						// AC	高度広帯域CSデジタル
+
 	};
 
 	if(!bDir){
