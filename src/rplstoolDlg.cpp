@@ -961,7 +961,7 @@ bool CrplstoolDlg::FileReadAndCheck(const WCHAR *filename)
 
 	hRplsFile = CreateFile(fname, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hRplsFile == INVALID_HANDLE_VALUE) {																					// ファイルを開けない場合、リードオンリーで再度開く
-		hRplsFile = CreateFile(fname, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		hRplsFile = CreateFile(fname, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (hRplsFile == INVALID_HANDLE_VALUE) {																				// それでも開けない場合はエラー
 			swprintf_s(wstr, CONVBUFSIZE, L"ファイル %s を開けませんでした", fname);
 			MessageBox(wstr, NAMESTRING, MB_ICONSTOP | MB_OK);
