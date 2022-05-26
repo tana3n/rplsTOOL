@@ -378,7 +378,7 @@ void CrplstoolDlg::SetComboGenreL(const int32_t idGenreL, const int32_t idGenreM
 
 void CrplstoolDlg::GetGenreStrL(const int32_t genre, CString& str)
 {
-	WCHAR	*str_genreL[] = {
+	const wchar_t	*str_genreL[] = {
 		L"ニュース／報道",			L"スポーツ",	L"情報／ワイドショー",	L"ドラマ",
 		L"音楽",					L"バラエティ",	L"映画",				L"アニメ／特撮",
 		L"ドキュメンタリー／教養",	L"劇場／公演",	L"趣味／教育",			L"福祉",
@@ -419,7 +419,7 @@ void CrplstoolDlg::SetComboGenreM(int32_t idGenreM, int32_t genre)
 
 void CrplstoolDlg::GetGenreStrM(const int32_t genre, CString& str)
 {
-	WCHAR	*str_genreM[] = {
+	const wchar_t	*str_genreM[] = {
 		L"定時・総合", L"天気", L"特集・ドキュメント", L"政治・国会", L"経済・市況", L"海外・国際", L"解説", L"討論・会談",
 		L"報道特番", L"ローカル・地域", L"交通", L"-", L"-", L"-", L"-", L"その他",
 
@@ -593,7 +593,7 @@ void CrplstoolDlg::SetComboRecSrc(const int32_t index)
 
 void CrplstoolDlg::GetComboStrRecSrc(const int32_t index, CString& str)
 {
-	WCHAR	*str_recsrc[] = {
+	const wchar_t	*str_recsrc[] = {
 		L"地上デジタル",
 		L"BSデジタル",
 		L"CSデジタル1",
@@ -1000,7 +1000,7 @@ bool CrplstoolDlg::FileReadAndCheck(const WCHAR *filename)
 		}
 
 		src.filename = fname;
-		std::tr2::sys::path myfile(fname);
+		std::filesystem::path myfile(fname);
 		src.shortfname = myfile.filename().c_str();
 
 		CrplstoolDlg::ParamLoad();																							// rplsデータから番組情報の取得
@@ -1042,7 +1042,7 @@ bool CrplstoolDlg::FileReadAndCheck(const WCHAR *filename)
 	}
 
 	src.filename = fname;
-	std::tr2::sys::path myfile(fname);
+	std::filesystem::path myfile(fname);
 	src.shortfname = myfile.filename().c_str();
 
 	bak = src;
