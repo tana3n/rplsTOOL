@@ -101,19 +101,27 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 				else if (sbuf[src] >= 0xF0 && sbuf[src] < 0xF5) {
 					char sConv[4]{ (char)sbuf[src],(char)sbuf[src + 1],(char)sbuf[src + 2],(char)sbuf[src + 3] };
 					uint32_t sEsc = ((sConv[0] & 0xFF) << 24 | (sConv[1] & 0xFF) << 16 | (sConv[2] & 0xFF) << 8 | (sConv[3] & 0xFF));
-					if (sEsc == 0xF09F889A) {
-						UTF16BUF((int)dbuf[dst - 1]);
+					if ( (sEsc >= 0xF09F8400) & (sEsc <= 0xF09F8900) ){
+					//if ((sConv[0] == 0xF0) && (sConv[1] == 0x9F) && (sConv[2] > 0x84) && (sConv[2] < 0x89) ) {
+						//getUTF8toARIBAdditionalSynbol(sConv[0],);
+						dst++;
 						dbuf[dst - 1] = 0x005B;
-						UTF16BUF((int)dbuf[dst - 0]);
-						dbuf[dst - 1] = 0x7121;
-						UTF16BUF((int)dbuf[dst - 1]);
+						if (sEsc == 0xF09F889A) {
+							dst++;
+							dbuf[dst - 1] = 0x7121;
+						}
+						if (sEsc == 0xF09F8891) {
+							dst++;
+							dbuf[dst - 1] = 0x5B57;
+						}
+						if (sEsc == 0xF09F869E) {
+							dst++;
+							dbuf[dst - 1] = 0x0034;
+							dst++;
+							dbuf[dst - 1] = 0x004B;
+						}
+						dst++;
 						dbuf[dst - 1] = 0x005D;
-						//dbuf[dst + 1] = 0x30151;
-						//dst = dst +3;
-						//dConv[0] = 0x7121;
-						//dbuf[dst - 1] = 0x3015;
-						//UTF16BUF((int)dbuf[dst - 1]);
-					
 					}
 					else {
 						MultiByteToWideChar(CP_UTF8, 0, sConv, 4, dConv, 1);
