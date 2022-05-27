@@ -10,6 +10,8 @@
 #include "convToUnicode.h"
 #include "proginfo.h"
 
+#include "convUTFToUnicode.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -419,7 +421,7 @@ void CrplstoolDlg::SetComboGenreM(int32_t idGenreM, int32_t genre)
 
 void CrplstoolDlg::GetGenreStrM(const int32_t genre, CString& str)
 {
-	const wchar_t	*str_genreM[] = {
+	const wchar_t *str_genreM[] = {
 		L"定時・総合", L"天気", L"特集・ドキュメント", L"政治・国会", L"経済・市況", L"海外・国際", L"解説", L"討論・会談",
 		L"報道特番", L"ローカル・地域", L"交通", L"-", L"-", L"-", L"-", L"その他",
 
@@ -593,7 +595,7 @@ void CrplstoolDlg::SetComboRecSrc(const int32_t index)
 
 void CrplstoolDlg::GetComboStrRecSrc(const int32_t index, CString& str)
 {
-	const wchar_t	*str_recsrc[] = {
+	const wchar_t *str_recsrc[] = {
 		L"地上デジタル",
 		L"BSデジタル",
 		L"CSデジタル1",
@@ -702,6 +704,7 @@ void CrplstoolDlg::ParamInit(void)
 	src.genre[2]	= -1;
 
 	src.bReadOnly	= false;
+	src.bRplsVer = 0;
 
 	bak = src;
 
@@ -989,6 +992,13 @@ bool CrplstoolDlg::FileReadAndCheck(const WCHAR *filename)
 
 	if( (buf[0] == 'P') && (buf[1] == 'L') && (buf[2] == 'S') && (buf[3] == 'T') )												// rplsファイルの場合
 	{
+		if (buf[5] == '3') {
+			src.bReadOnly = true;																									// PLST0300の解析が終わっていないので読み取り専用
+			src.bRplsVer = 0300;
+
+		}
+		if (buf[5] == '1') src.bRplsVer = 0100;																						//こっちは従来通り
+
 		src.filelen = GetFileSize(hRplsFile, NULL);
 		if(src.filelen > RPLSFILESIZE) {
 			swprintf_s(wstr, CONVBUFSIZE, L"RPLSファイル %s のサイズが大きすぎます", fname);
@@ -1090,15 +1100,19 @@ void CrplstoolDlg::ParamLoad(void)
 	WCHAR	wstr[CONVBUFSIZE];
 
 	int32_t	chnamelen = appinfo[ADR_CHANNELNAME];
-	conv_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_CHANNELNAME + 1, chnamelen, opt.bCharSizeTo, opt.bIVS);
+	if (src.bRplsVer == 0300) conv_utf_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_CHANNELNAME + 1, chnamelen, opt.bCharSizeTo, opt.bIVS);
+	else conv_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_CHANNELNAME + 1, chnamelen, opt.bCharSizeTo, opt.bIVS);
+
 	src.chname = wstr;
 
 	int32_t pnamelen = appinfo[ADR_PNAME];
-	conv_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_PNAME + 1, pnamelen, opt.bCharSizeTo, opt.bIVS);
+	if (src.bRplsVer == 0300) conv_utf_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_PNAME + 1, pnamelen, opt.bCharSizeTo, opt.bIVS);
+	else conv_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_PNAME + 1, pnamelen, opt.bCharSizeTo, opt.bIVS);
 	src.pname = wstr;
 
 	src.pdetaillen = appinfo[ADR_PDETAIL] * 256 + appinfo[ADR_PDETAIL + 1];
-	conv_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_PDETAIL + 2, src.pdetaillen, opt.bCharSizeTo, opt.bIVS);
+	if (src.bRplsVer == 0300) conv_utf_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_PDETAIL + 2, src.pdetaillen, opt.bCharSizeTo, opt.bIVS);
+	else conv_to_unicode((char16_t*)wstr, CONVBUFSIZE, appinfo + ADR_PDETAIL + 2, src.pdetaillen, opt.bCharSizeTo, opt.bIVS);
 	src.pdetail = wstr;
 
 	for(int32_t i = 0; i < 3; i++) src.genre[i] = -1;

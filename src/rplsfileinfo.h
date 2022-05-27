@@ -68,6 +68,7 @@ typedef struct {
 	bool		bPanaRpls;
 	bool		bSonyRpls;
 	bool		bReadOnly;
+	int32_t		bRplsVer;
 } RplsFileInfo;
 
 
