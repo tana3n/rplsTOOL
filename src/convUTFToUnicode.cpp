@@ -29,6 +29,44 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 
 	while (src < total_length)
 	{
+		if (isControlChar(sbuf[src]))
+		{
+			// 0x00～0x20, 0x7F～0xA0, 0xFFの場合
+
+			switch (sbuf[src])
+			{
+			case 0x08:						// APB (BS)
+			case 0x09:						// APF (TAB)
+				UTF16BUF(sbuf[src]);												// BS, TAB出力
+				src++;
+				break;
+			case 0x0A:						// APD (LF)
+			case 0x0D:						// APR (CR)
+#ifdef __USE_UTF_CODE_CRLF__
+				UTF16BUF(0x000D);													// CR出力
+#endif
+				UTF16BUF(0x000A);													// LF出力
+				if ((sbuf[src] == 0x0D) && ((src + 1) < total_length) && (sbuf[src + 1] == 0x0A)) src++;
+				src++;
+				break;
+			case 0x20:						// SP
+				UTF16BUF((bCharSize && status.bNormalSize) ? 0x3000 : 0x0020);	// 全角, 半角SP出力
+				src++;
+				break;
+			case 0x7F:						// DEL
+				UTF16BUF(0x007F);													// DEL出力．（DEL文字は前景色塗りつぶしなので、本来は U+25A0 や U+25AE を出力するのが正しい動作かと思いますが、都合によりこうしてあります）
+				src++;
+				break;
+			case 0x9B:						// CSI処理
+				src += csiProc(sbuf + src, total_length - src, &status);
+				break;
+			default:						// それ以外の制御コード
+				src += changeConvStatus(sbuf + src, total_length - src, &status);
+				break;
+			}
+		}
+		else
+		{
 
 		char  sConv[4] = {0,0,0,0};// sbuf[src];
 			//可変長の処理
@@ -84,7 +122,7 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 
 			}
 
-			//}
+		}
 	}
 		UTF16BUF2(0x0000);
 
