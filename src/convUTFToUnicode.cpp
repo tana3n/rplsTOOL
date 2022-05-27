@@ -6,6 +6,9 @@
 
 #define		UTF16BUF(x)						dst+=writeUTF16Buf(dbuf,maxbufsize,dst,x,status.bXCS)
 #define		UTF16BUF2(x)					dst+=writeUTF16Buf(dbuf,maxbufsize,dst,x,false)
+#define		__USE_UTF_CODE_CRLF__			// ユニコード出力の改行に CR+LF を使用する。定義しなければ LF のみになる。
+#define		__USE_8BITCODE_CR__				// 8単位符号出力の改行コードに0x0Dを使用する。定義しなければ0x0Aを使用する
+
 
 
 size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_t* sbuf, const size_t total_length, const bool bCharSize, const bool bIVS) {
@@ -68,59 +71,60 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 		else
 		{
 
-		char  sConv[4] = {0,0,0,0};// sbuf[src];
-			//可変長の処理
-		wchar_t dConv[1] = { 0 };
-			if (sbuf[src] < 0x80) {
-				char sConv[1]{ (char)sbuf[src] };
+			char  sConv[4] = {0,0,0,0};// sbuf[src];
+				//可変長の処理
+			wchar_t dConv[1] = { 0 };
+				if (sbuf[src] < 0x80) {
+					char sConv[1]{ (char)sbuf[src] };
 
-				MultiByteToWideChar(CP_UTF8, 0, sConv, 1, dConv, 4);
-				src = src + 1;
-				UTF16BUF((int)dConv);
-				dbuf[dst - 1] = dConv[0];
-			}
-			else if ((sbuf[src] >= 0xC2) && (sbuf[src] < 0xDF)) {
-				char sConv[2]{ (char)sbuf[src],(char)sbuf[src + 1] };
-
-				MultiByteToWideChar(CP_UTF8, 0, sConv, 2, dConv, 8);
-				src = src + 2;
-				UTF16BUF((int)dConv);
-				dbuf[dst - 1] = dConv[0];
-			}
-			else if (sbuf[src] >= 0xE0 && sbuf[src] < 0xF0) {
-				char sConv[3]{ (char)sbuf[src],(char)sbuf[src + 1],(char)sbuf[src + 2] };
-
-				MultiByteToWideChar(CP_UTF8, 0, sConv, 3, dConv, 12);
-				src = src + 3;
-				UTF16BUF((int)dConv);
-				dbuf[dst - 1] = dConv[0];
-			}
-			else if (sbuf[src] >= 0xF0 && sbuf[src] < 0xF5) {
-				char sConv[4]{ (char)sbuf[src],(char)sbuf[src + 1],(char)sbuf[src + 2],(char)sbuf[src + 3] };
-				uint32_t sEsc = ((sConv[0] & 0xFF) << 24 | (sConv[1] & 0xFF) << 16 | (sConv[2] & 0xFF) << 8 | (sConv[3] & 0xFF));
-				if (sEsc == 0xF09F889A) {
-					UTF16BUF((int)dbuf[dst - 1]);
-					dbuf[dst - 1] = 0x005B;
-					UTF16BUF((int)dbuf[dst - 0]);
-					dbuf[dst - 1] = 0x7121;
-					UTF16BUF((int)dbuf[dst - 1]);
-					dbuf[dst - 1] = 0x005D;
-					//dbuf[dst + 1] = 0x30151;
-					//dst = dst +3;
-					//dConv[0] = 0x7121;
-					//dbuf[dst - 1] = 0x3015;
-					//UTF16BUF((int)dbuf[dst - 1]);
-					
-				}
-				else {
-					MultiByteToWideChar(CP_UTF8, 0, sConv, 4, dConv, 32);
-					UTF16BUF((int)dConv);
+					MultiByteToWideChar(CP_UTF8, 0, sConv, 1, dConv, 1);
+					src = src + 1;
+					dst++;
 					dbuf[dst - 1] = dConv[0];
 				}
+				else if ((sbuf[src] >= 0xC2) && (sbuf[src] < 0xDF)) {
+					char sConv[2]{ (char)sbuf[src],(char)sbuf[src + 1] };
 
-				src = src + 4;
+					MultiByteToWideChar(CP_UTF8, 0, sConv, 2, dConv, 1);
+					src = src + 2;
+					dst++;
+					dbuf[dst - 1] = dConv[0];
+				}
+				else if (sbuf[src] >= 0xE0 && sbuf[src] < 0xF0) {
+					char sConv[3]{ (char)sbuf[src],(char)sbuf[src + 1],(char)sbuf[src + 2] };
 
-			}
+					MultiByteToWideChar(CP_UTF8, 0, sConv, 3, dConv, 1);
+					src = src + 3;
+					dst++;
+					dbuf[dst - 1] = dConv[0];
+				}
+				else if (sbuf[src] >= 0xF0 && sbuf[src] < 0xF5) {
+					char sConv[4]{ (char)sbuf[src],(char)sbuf[src + 1],(char)sbuf[src + 2],(char)sbuf[src + 3] };
+					uint32_t sEsc = ((sConv[0] & 0xFF) << 24 | (sConv[1] & 0xFF) << 16 | (sConv[2] & 0xFF) << 8 | (sConv[3] & 0xFF));
+					if (sEsc == 0xF09F889A) {
+						UTF16BUF((int)dbuf[dst - 1]);
+						dbuf[dst - 1] = 0x005B;
+						UTF16BUF((int)dbuf[dst - 0]);
+						dbuf[dst - 1] = 0x7121;
+						UTF16BUF((int)dbuf[dst - 1]);
+						dbuf[dst - 1] = 0x005D;
+						//dbuf[dst + 1] = 0x30151;
+						//dst = dst +3;
+						//dConv[0] = 0x7121;
+						//dbuf[dst - 1] = 0x3015;
+						//UTF16BUF((int)dbuf[dst - 1]);
+					
+					}
+					else {
+						MultiByteToWideChar(CP_UTF8, 0, sConv, 4, dConv, 1);
+						dst++;
+						dbuf[dst - 1] = dConv[0];
+					}
+
+					src = src + 4;
+
+				}
+				else UTF16BUF(0x0020);
 
 		}
 	}
