@@ -71,9 +71,7 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 		else
 		{
 
-			char  sConv[4] = {0,0,0,0};// sbuf[src];
-				//â¬ïœí∑ÇÃèàóù
-			wchar_t dConv[1] = { 0 };
+			wchar_t dConv[4] = { 0,0,0,0 };
 				if (sbuf[src] < 0x80) {
 					char sConv[1]{ (char)sbuf[src] };
 
@@ -102,35 +100,23 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 					char sConv[4]{ (char)sbuf[src],(char)sbuf[src + 1],(char)sbuf[src + 2],(char)sbuf[src + 3] };
 					uint32_t sEsc = ((sConv[0] & 0xFF) << 24 | (sConv[1] & 0xFF) << 16 | (sConv[2] & 0xFF) << 8 | (sConv[3] & 0xFF));
 					if ( (sEsc >= 0xF09F8400) & (sEsc <= 0xF09F8900) ){
-					//if ((sConv[0] == 0xF0) && (sConv[1] == 0x9F) && (sConv[2] > 0x84) && (sConv[2] < 0x89) ) {
-						//getUTF8toARIBAdditionalSynbol(sConv[0],);
-						dst++;
-						dbuf[dst - 1] = 0x005B;
-						if (sEsc == 0xF09F889A) {
-							dst++;
-							dbuf[dst - 1] = 0x7121;
+						
+						uint8_t dLen = getUTF8toARIBAdditionalSynbol(sConv,dConv);
+						
+						for (int i = 0; i < dLen; i++) {
+							dbuf[dst] = dConv[i];
+							dst = dst + 1;
+
 						}
-						if (sEsc == 0xF09F8891) {
-							dst++;
-							dbuf[dst - 1] = 0x5B57;
-						}
-						if (sEsc == 0xF09F869E) {
-							dst++;
-							dbuf[dst - 1] = 0x0034;
-							dst++;
-							dbuf[dst - 1] = 0x004B;
-						}
-						dst++;
-						dbuf[dst - 1] = 0x005D;
+						
 					}
 					else {
 						MultiByteToWideChar(CP_UTF8, 0, sConv, 4, dConv, 1);
+						dbuf[dst] = dConv[0];
 						dst++;
-						dbuf[dst - 1] = dConv[0];
 					}
 
 					src = src + 4;
-
 				}
 				else UTF16BUF(0x0020);
 
@@ -143,3 +129,82 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 
 		return dst;			// ïœä∑å„ÇÃí∑Ç≥Çï‘Ç∑(char16_tíPà ), èIí[ÇÃnullï∂éöï™Çä‹Ç‹Ç»Ç¢
 	}
+
+size_t getUTF8toARIBAdditionalSynbol(char* sConv, wchar_t* dConv) {
+	uint32_t sEsc = ((sConv[0] & 0xFF) << 24 | (sConv[1] & 0xFF) << 16 | (sConv[2] & 0xFF) << 8 | (sConv[3] & 0xFF));
+	size_t dst = 0;
+
+	dConv[dst] = 0x005B;
+	dst++;
+
+	if ((sEsc >= 0xF09F84B0) & (sEsc < 0xF09F84BF)) {//A-P
+		uint32_t sCount = sEsc - 0xF09F84B0 + 1;
+		dConv[dst] = ((0x40 + sCount) & 0xFF);
+		dst++;
+	}
+	else if ((sEsc >= 0xF09F8580) & (sEsc < 0xF09F8589)) {//S-Z
+		uint32_t sCount = sEsc - 0xF09F8580 + 1;
+		dConv[dst] = ((0x50 + sCount) & 0xFF);
+		dst++;
+	}
+	else if (sEsc == 0xF09F869C) {//[2ndScr]
+		dConv[dst] = 0x0032;
+		dst++;
+		dConv[dst] = 0x6E00;
+		dst++;
+		dConv[dst] = 0x6400;
+		dst++;
+		dConv[dst] = 0x5300;
+		dst++;
+		dConv[dst] = 0x6300;
+		dst++;
+		dConv[dst] = 0x7200;
+		dst++;
+	}
+	else if (sEsc == 0xF09F86A7) {//[Hi-Res]
+		dConv[dst] = 0x4800;
+		dst++;
+		dConv[dst] = 0x6900;
+		dst++;
+		dConv[dst] = 0x002D;
+		dst++;
+		dConv[dst] = 0x5100;
+		dst++;
+		dConv[dst] = 0x6500;
+		dst++;
+		dConv[dst] = 0x7300;
+		dst++;
+
+	}
+	else {
+		int sNo = 0;
+		while (tables[sNo].utf8 != -1) {
+
+			if (tables[sNo].utf8 == sEsc) {
+				int dEsc = tables[sNo].utf16;
+				int dLoop = 0;
+				if (dEsc <= 0xFFFF)dLoop = 1;
+				else if (dEsc <= 0xFFFFFFFF)dLoop = 2;
+				else if (dEsc <= 0xFFFFFFFFFFFF)dLoop = 3;
+				else if (dEsc <= 0xFFFFFFFFFFFFFFFF)dLoop = 4;
+
+				int dEscSplit = (dEsc & 0xFFFF);
+				dConv[dst] = dEscSplit;
+				dst++;
+				int s = 1;
+				while (s < dLoop) {
+
+					dEscSplit = (dEsc >> (16 * s)) & 0xFFFF;
+					dConv[dst] = dEscSplit;
+					dst++;
+					s++;
+				}
+			}
+			sNo = sNo + 1;
+		}
+	}
+
+	dConv[dst] = 0x005D;
+	dst++;
+	return dst;
+}
