@@ -216,6 +216,7 @@
   <ItemGroup>
     <ClCompile Include="characterSets.cpp" />
     <ClCompile Include="convToUnicode.cpp" />
+    <ClCompile Include="convUTFToUnicode.cpp" />
     <ClCompile Include="proginfo.cpp" />
     <ClCompile Include="rplstool.cpp" />
     <ClCompile Include="rplstoolDlg.cpp" />
@@ -230,6 +231,7 @@
   <ItemGroup>
     <ClInclude Include="characterSets.h" />
     <ClInclude Include="convToUnicode.h" />
+    <ClInclude Include="convUTFToUnicode.h" />
     <ClInclude Include="proginfo.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="rplsfileinfo.h" />
