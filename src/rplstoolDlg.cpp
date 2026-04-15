@@ -995,7 +995,10 @@ bool CrplstoolDlg::FileReadAndCheck(const WCHAR *filename)
 		if (buf[5] == '3') {
 			src.bReadOnly = true;																									// PLST0300の解析が終わっていないので読み取り専用
 			src.bRplsVer = 0300;
-
+		}
+		if (buf[5] == '2') {
+			src.bReadOnly = true;																									// PLST0200も解析が終わっていないので読み取り専用
+			src.bRplsVer = 0300;                                                                                                    // 物自体は0300と一緒っぽい
 		}
 		if (buf[5] == '1') src.bRplsVer = 0100;																						//こっちは従来通り
 
