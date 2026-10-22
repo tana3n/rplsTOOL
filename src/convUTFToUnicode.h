@@ -6,8 +6,8 @@ size_t getUTF8toARIBAdditionalSynbol(char* sConv, wchar_t* dConv);
 
 typedef struct UTFToUnicodeTable
 {
-	int utf8;
-	int utf16;
+	__int64 utf8;
+	__int64 utf16;
 };
 
 const struct UTFToUnicodeTable tables[] =
@@ -31,10 +31,10 @@ const struct UTFToUnicodeTable tables[] =
 	{0xF09F86A4, 0x4F00003000320031},//60P
 	{0xF09F86A5, 0x6400},//[d]
 	{0xF09F86A6, 0x43004800},//HybridCast
-	{0xF09F86A7, 0x510044004800},//HDR
-	{0xF09F86AA, 0x560048005300},//SHV
-	{0xF09F86AB, 0x440048005500},//UHD
-	{0xF09F86AC, 0x44004E005600},//VOD
+	{0xF09F86A7, 0x005200440048},//HDR
+	{0xF09F86AA, 0x005600480053},//SHV
+	{0xF09F86AB, 0x004400480055},//UHD
+	{0xF09F86AC, 0x0044004E0056},//VOD
 
 	{0xF09F8890, 0x624B},//Žè
 	{0xF09F8891, 0x5B57},// Žš

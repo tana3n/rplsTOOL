@@ -71,7 +71,9 @@ size_t conv_utf_to_unicode(char16_t* dbuf, const size_t maxbufsize, const uint8_
 		else
 		{
 
-			wchar_t dConv[4] = { 0,0,0,0 };
+			
+			wchar_t dConv[8] = { 0,0,0,0,0,0,0,0 };
+
 				if (sbuf[src] < 0x80) {
 					char sConv[1]{ (char)sbuf[src] };
 
@@ -150,38 +152,38 @@ size_t getUTF8toARIBAdditionalSynbol(char* sConv, wchar_t* dConv) {
 	else if (sEsc == 0xF09F869C) {//[2ndScr]
 		dConv[dst] = 0x0032;
 		dst++;
-		dConv[dst] = 0x6E00;
+		dConv[dst] = 0x006E;
 		dst++;
-		dConv[dst] = 0x6400;
+		dConv[dst] = 0x0064;
 		dst++;
-		dConv[dst] = 0x5300;
+		dConv[dst] = 0x0053;
 		dst++;
-		dConv[dst] = 0x6300;
+		dConv[dst] = 0x0063;
 		dst++;
-		dConv[dst] = 0x7200;
+		dConv[dst] = 0x0072;
 		dst++;
 	}
-	else if (sEsc == 0xF09F86A7) {//[Hi-Res]
-		dConv[dst] = 0x4800;
-		dst++;
-		dConv[dst] = 0x6900;
-		dst++;
-		dConv[dst] = 0x002D;
-		dst++;
-		dConv[dst] = 0x5100;
-		dst++;
-		dConv[dst] = 0x6500;
-		dst++;
-		dConv[dst] = 0x7300;
-		dst++;
+	//else if (sEsc == 0xF09F86A7) {//[Hi-Res]
+	//	dConv[dst] = 0x4800;
+	//	dst++;
+	//	dConv[dst] = 0x6900;
+	//	dst++;
+	//	dConv[dst] = 0x002D;
+	//	dst++;
+	//	dConv[dst] = 0x5100;
+	//	dst++;
+	//	dConv[dst] = 0x6500;
+	//	dst++;
+	//	dConv[dst] = 0x7300;
+	//	dst++;
 
-	}
+	//}
 	else {
 		int sNo = 0;
 		while (tables[sNo].utf8 != -1) {
 
 			if (tables[sNo].utf8 == sEsc) {
-				int dEsc = tables[sNo].utf16;
+				__int64 dEsc = tables[sNo].utf16;
 				int dLoop = 0;
 				if (dEsc <= 0xFFFF)dLoop = 1;
 				else if (dEsc <= 0xFFFFFFFF)dLoop = 2;
